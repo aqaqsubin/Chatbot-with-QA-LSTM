@@ -1,4 +1,4 @@
-# **Chatbot based on QA-LSTM**
+# **Chatbot based on QA-LSTM🤖**
 
 ### **2016 ICLR LSTM-based Deep Learning Models for Non-factoid Answer Selection** 
 QA-LSTM과 QA-LSTM with Attention 모델 구현 (avg_pooling/max_pooling)  
