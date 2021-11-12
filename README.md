@@ -6,7 +6,7 @@ QA-LSTM과 QA-LSTM with Attention 모델 구현 (avg_pooling/max_pooling)
 <br>
 
 > **Word Embedding**  
-&nbsp;&nbsp;&nbsp;Word2Vec에서 BERT 임베딩으로 수정 (KoBERT `monologg/kobert` 사용)  
+&nbsp;&nbsp;&nbsp;KoBERT `monologg/kobert` 사용한 BERT 임베딩  
 
 
 ## **모델 프레임워크**
