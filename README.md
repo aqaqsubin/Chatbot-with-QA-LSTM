@@ -24,3 +24,7 @@ Framework of QA-LSTM
 Framework of QA-LSTM with attention
 </div>
 <br>
+
+> **Attention mechanism**  
+> &nbsp;&nbsp;Bahdanau Attention mechanism 사용   
+
