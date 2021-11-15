@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from transformers import BertModel
 
-
 class BertEmbeddings(nn.Module):
     def __init__(self, **kwargs):
         super().__init__()
@@ -10,16 +9,19 @@ class BertEmbeddings(nn.Module):
         self.pad_token_id = kwargs['pad_token_id']
 
     def forward(self, tok_ids):
-        attn_mask = torch.zeros_like(tok_ids)
+        attn_mask = torch.zeros_like(tok_ids).type_as(tok_ids)
         attn_mask[tok_ids!=self.pad_token_id] = 1
-        output = self.model(tok_ids, attn_mask, torch.zeros(tok_ids.size(), dtype=torch.int))
+        output = self.model(tok_ids, attn_mask, torch.zeros(tok_ids.size(), dtype=torch.int).type_as(tok_ids))
 
         return output['last_hidden_state']
 
 class RetrievalLSTM(nn.Module):
     def __init__(self, args, vocab_size, method='max_pooling'):
         super(RetrievalLSTM, self).__init__()
-        self.word_embd = BertEmbeddings(pad_token_id=1)
+        if args.embed =='bert':
+            self.word_embd = BertEmbeddings(pad_token_id=1)
+        else:
+            self.word_embd = nn.Embedding(vocab_size, args.embd_size)
         self.shared_lstm = nn.LSTM(args.embd_size, args.hidden_size, batch_first=True, bidirectional=True)
         self.cos = nn.CosineSimilarity(dim=1)
         self.method = method
