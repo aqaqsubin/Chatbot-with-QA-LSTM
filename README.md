@@ -78,6 +78,7 @@ python main.py --cuda --gpuid 0 --data_dir [data directory path] --method [pooli
 	- `nn` : torch.nn.Embedding Layer  
 
 ### **모델 검증**
+📣 검증 시 `LightningQALSTM`의 `embd_size`, `hiddend_size` 확인 필요  (훈련과 동일하게 설정)  
 
 ```
 python main.py --cuda --model_pt [model path] --gpuid [gpu id] --data_dir [data directory path]
@@ -100,8 +101,9 @@ python main.py --cuda --model_pt [model path] --gpuid [gpu id] --data_dir [data 
 > **Model Info**   
 >&nbsp;&nbsp;&nbsp;&nbsp;Model : QA-LSTM  
 &nbsp;&nbsp;&nbsp;&nbsp;pooling : max_pooling  
-&nbsp;&nbsp;&nbsp;&nbsp;embedding method: nn.Embedding Layer  
-
+&nbsp;&nbsp;&nbsp;&nbsp;embedding method: nn.Embedding Layer   
+&nbsp;&nbsp;&nbsp;&nbsp;embedding size: 256    
+&nbsp;&nbsp;&nbsp;&nbsp;hiddend size: 128     
 
 <div  align=left>
 <img  src="./img/example.png"  width=700/><br>
@@ -113,7 +115,10 @@ python main.py --cuda --model_pt [model path] --gpuid [gpu id] --data_dir [data 
 > **Model Info**   
 >&nbsp;&nbsp;&nbsp;&nbsp;Model : QA-LSTM with attention   
 &nbsp;&nbsp;&nbsp;&nbsp;pooling : max_pooling    
-&nbsp;&nbsp;&nbsp;&nbsp;embedding method: nn.Embedding Layer    
+&nbsp;&nbsp;&nbsp;&nbsp;embedding method: nn.Embedding Layer   
+&nbsp;&nbsp;&nbsp;&nbsp;embedding size: 256    
+&nbsp;&nbsp;&nbsp;&nbsp;hiddend size: 128     
+
 <div  align=left>
 <img  src="./img/example_attn.png"  width=700/><br>
 </div>
