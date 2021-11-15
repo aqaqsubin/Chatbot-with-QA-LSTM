@@ -96,12 +96,27 @@ python main.py --cuda --model_pt [model path] --gpuid [gpu id] --data_dir [data 
 
 
 <br>
-<div  align=left>
-<img  src="./img/example.png"  width=700/><br>
-</div>
-<br>
 
 > **Model Info**   
 >&nbsp;&nbsp;&nbsp;&nbsp;Model : QA-LSTM  
 &nbsp;&nbsp;&nbsp;&nbsp;pooling : max_pooling  
 &nbsp;&nbsp;&nbsp;&nbsp;embedding method: nn.Embedding Layer  
+
+
+<div  align=left>
+<img  src="./img/example.png"  width=700/><br>
+</div>
+<br>
+
+<br>
+
+> **Model Info**   
+>&nbsp;&nbsp;&nbsp;&nbsp;Model : QA-LSTM with attention   
+&nbsp;&nbsp;&nbsp;&nbsp;pooling : max_pooling    
+&nbsp;&nbsp;&nbsp;&nbsp;embedding method: nn.Embedding Layer    
+<div  align=left>
+<img  src="./img/example_attn.png"  width=700/><br>
+</div>
+<br>
+
+
