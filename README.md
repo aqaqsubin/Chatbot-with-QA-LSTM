@@ -51,7 +51,7 @@ QA-LSTM with attention
   
   
 
-👉 **Attention mechanism**
+👉 **Attention mechanism**  
 &nbsp;&nbsp;Bahdanau Attention mechanism 사용
 
 <br>
