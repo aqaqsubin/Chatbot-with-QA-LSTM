@@ -12,7 +12,6 @@ from math import ceil as ceil
 
 from os.path import join as pjoin
 
-
 from data_utils import read_df
 from lightning_model import LightningQALSTM
 from model.qa_lstm import RetrievalLSTM
@@ -53,18 +52,16 @@ def load_reply_embs(model, replies, device):
                 del pool, lstm_out
     return
 
-def get_reply_embs(batch_size):
+def get_reply_embs():
     assert os.path.isfile(REACTION_PATH)
     reply_embs = []
-    while True:
-        try:
-            reply = pickle.load(open(REACTION_PATH, 'rb'))
-        except EOFError:
-            break
-        reply_embs.append(reply)
-        if len(reply_embs) == batch_size:
-            yield reply_embs
-            reply_embs = []
+    with open(REACTION_PATH, 'rb') as f_react:
+        while True:
+            try:
+                pool, lstm_out, reply = pickle.load(f_react)
+            except EOFError:
+                break
+            reply_embs.append((pool, lstm_out, reply))
 
     return reply_embs
 
@@ -86,41 +83,37 @@ def encode(sent):
     tok_ids = tokenize(sent)
     return torch.unsqueeze(torch.LongTensor(tok_ids), 0)
 
+
 def chat(model, cand_num, device):
     def _is_valid(query):
         if not query or query == "c":
             return False
         return True
 
-    # replies = get_reply_embs()
-    
+    replies = get_reply_embs()
     query = input("사용자 입력: ")
+
     while _is_valid(query):
-        print(query)
         query_tok = encode(query).to(device=device)
         query_pool, _ = model.get_emb(query_tok)
 
-        batch = get_reply_embs(batch_size=256)
-        entire_cos_sim = []
-        while batch:
-            if isinstance(model, RetrievalLSTM):
-                print("RetrievalLSTM")
-                cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1]), batch))
-            else:
-                attn_weights = list(map(lambda x: model.get_attn(query_pool, x[1]), batch))
-                cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0]), x[-1][-1]), zip(attn_weights, batch)))
-                del attn_weights
+        cos_sims = []
 
-            entire_cos_sim += cos_sims[:cand_num]
-            entire_cos_sim = sorted(entire_cos_sim, key=lambda x: x[0], reverse=True)
-            entire_cos_sim = entire_cos_sim[:cand_num]
-            del cos_sims
+        if isinstance(model, RetrievalLSTM):
+            print("RetrievalLSTM")
+            cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1]), replies)) 
+        else:
+            print("RetrievalABLSTM")
+            attn_weights = list(map(lambda x: model.get_attn(query_pool, x[1]), replies))
+            cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1][-1]), zip(attn_weights, replies)))    
+            del attn_weights
 
-            batch = get_reply_embs(batch_size=256)
+        cos_sims = sorted(cos_sims, key=lambda x: x[0], reverse=True)
+        cos_sims = cos_sims[:cand_num]
 
-        candidates = [r for sim, r in entire_cos_sim]
+        candidates = [r for _sim, r in cos_sims]
         print(f"Candidate: {candidates}\n")
-        del query_tok, query_pool, _, candidates
+        del query_tok, query_pool, _, candidates, cos_sims
 
         query = input("사용자 입력: ")
 
