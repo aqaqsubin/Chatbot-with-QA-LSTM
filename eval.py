@@ -26,7 +26,7 @@ def base_setting(args):
     args.embd_size = getattr(args, 'embd_size', 256)
     args.hidden_size = getattr(args, 'hidden_size', 128)
     args.neg_size = getattr(args, 'neg_size', 10)
-    args.margin = getattr(args, 'margin', 0.2)
+    args.margin = getattr(args, 'margin', 2.0)
     args.algorithm = getattr(args, 'algorithm', 'levenshtein')
     args.cand_num = getattr(args, 'cand_num', 20)
 
