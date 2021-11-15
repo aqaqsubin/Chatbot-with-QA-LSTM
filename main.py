@@ -2,7 +2,7 @@ import os
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from kobert_transformers import get_tokenizer
-from lightning_qa_lstm import LightningQALSTM
+from lightning_model import LightningQALSTM
 from eval import evaluation
 
 import argparse
