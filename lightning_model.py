@@ -14,10 +14,10 @@ from model.qa_lstm_with_attn import RetrievalABLSTM
 from model.qa_lstm import RetrievalLSTM
 
 class LightningQALSTM(LightningModule):
-    def __init__(self, hparams, **kwargs):
+    def __init__(self, hparams, tokenizer):
         super(LightningQALSTM, self).__init__()
         self.hparams = hparams
-        self.tok = kwargs['tokenizer']
+        self.tok = tokenizer
         if not self.hparams.attention:
             self.qa_lstm = RetrievalLSTM(hparams, vocab_size=self.tok.vocab_size, method=self.hparams.method)
         else:
@@ -25,6 +25,7 @@ class LightningQALSTM(LightningModule):
 
     @staticmethod
     def add_model_specific_args(parent_parser):
+        # add model specific args
         parser = argparse.ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument('--max_len',
                             type=int,
@@ -50,10 +51,9 @@ class LightningQALSTM(LightningModule):
         parser.add_argument('--algorithm',
                             type=str,
                             default='levenshtein')
-
         parser.add_argument('--hidden_size',
                             type=int,
-                            default=512)
+                            default=256)
         parser.add_argument('--embd_size',
                             type=int,
                             default=768)
@@ -64,7 +64,7 @@ class LightningQALSTM(LightningModule):
         return parser
 
     def forward(self, query, reply):
-        cos_sim = self.qa_lstm(query, reply)
+        cos_sim, q_pool, r_pool = self.qa_lstm(query, reply)
         return cos_sim
 
     def loss_fn(self, pos_sim, neg_sim, margin):
@@ -99,8 +99,9 @@ class LightningQALSTM(LightningModule):
             losses.append(loss)
             #     break
         train_loss = torch.mean(torch.stack(losses, 0))
-        self.log('train_loss', train_loss)
+        self.log('train_loss', train_loss, prog_bar=True)
         return train_loss
+
 
     def validation_step(self, batch, batch_idx):
         query, pos, negs = batch
@@ -124,6 +125,7 @@ class LightningQALSTM(LightningModule):
         self.log('val_loss', torch.stack(avg_losses).mean(), prog_bar=True)
     
     def configure_optimizers(self):
+        # Prepare optimizer
         param_optimizer = list(self.named_parameters())
         no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
         optimizer_grouped_parameters = [
@@ -132,7 +134,7 @@ class LightningQALSTM(LightningModule):
         ]
         optimizer = AdamW(optimizer_grouped_parameters,
                           lr=self.hparams.lr, correct_bias=False)
-
+        # warm up lr
         num_train_steps = len(self.train_dataloader()) * self.hparams.max_epochs
         num_warmup_steps = int(num_train_steps * self.hparams.warmup_ratio)
         scheduler = get_cosine_schedule_with_warmup(

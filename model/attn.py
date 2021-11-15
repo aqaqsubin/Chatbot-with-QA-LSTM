@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+
 class BadanauAttn(nn.Module):
     def __init__(self, hidden_size):
         super().__init__()
@@ -12,7 +13,7 @@ class BadanauAttn(nn.Module):
         self.w_ms = nn.Linear(2 * hidden_size, 2 * hidden_size, bias=False)
         # self.w_ms = nn.Linear(2 * hidden_size, 1)
 
-    def forward(self, query_pool, rep_out):
+    def forward(self, query_pool, rep_out, mask_3d):
         '''
             query_pool: (batch_size, seq_len)
             rep_out: (batch_size, seq_len, hidden_size * 2)
@@ -25,7 +26,8 @@ class BadanauAttn(nn.Module):
         # Attention Score
         # (batch_size, seq_len, hidden_size * 2)
         attn_score = self.w_ms(W_s_h)
-        
+        attn_score.data.masked_fill_(mask_3d == 0, -float('inf'))
+
         # Alignment Vector (Attention Distribution)
         # (batch_size, seq_len, hidden_size * 2)
         att_weights = F.softmax(attn_score, dim=1)

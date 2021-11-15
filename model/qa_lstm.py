@@ -9,6 +9,7 @@ class BertEmbeddings(nn.Module):
         self.pad_token_id = kwargs['pad_token_id']
 
     def forward(self, tok_ids):
+        # device = f'cuda:{tok_ids.get_device()}'
         attn_mask = torch.zeros_like(tok_ids).type_as(tok_ids)
         attn_mask[tok_ids!=self.pad_token_id] = 1
         output = self.model(tok_ids, attn_mask, torch.zeros(tok_ids.size(), dtype=torch.int).type_as(tok_ids))

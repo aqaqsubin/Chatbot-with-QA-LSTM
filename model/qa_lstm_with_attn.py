@@ -23,7 +23,7 @@ class RetrievalABLSTM(RetrievalLSTM):
         q_out, q_hidden_stat = self.shared_lstm(query_emb)
         
         # Get representation of query 
-        # (batch_size, seq_len)
+        # (batch_size, hidden_size * 2)
         q_pool = self.get_pools(q_out)
 
         # bi-LSTM
@@ -32,12 +32,16 @@ class RetrievalABLSTM(RetrievalLSTM):
 
         # Get attention weights
         # (batch_size, seq_len, hidden_size * 2)
-        attn_weights = self.attn(q_pool, r_out) 
+        mask = torch.ones_like(reply)
+        mask = torch.where(reply!=1, mask, 0)
+        mask_3d = mask.unsqueeze(dim=2).repeat_interleave(repeats=q_pool.size(-1), dim=2)
+
+        attn_weights = self.attn(q_pool, r_out, mask_3d) 
 
         # Get representation of reply 
-        # (batch_size, seq_len)
+        # (batch_size, hidden_size * 2)
         r_pool = self.get_pools(attn_weights)
-        
+
         # (batch_size,)
         cos_sim = self.cos(q_pool, r_pool)
         return cos_sim, q_pool, r_pool
