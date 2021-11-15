@@ -34,6 +34,7 @@ if __name__ == "__main__":
                         default='../data')
 
     parser.add_argument("--method", type=str, default="max_pooling")
+    parser.add_argument("--embed", type=str, default="bert")
 
     parser.add_argument("--cuda", 
                         action='store_true',
