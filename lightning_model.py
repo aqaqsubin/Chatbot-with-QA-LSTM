@@ -31,7 +31,7 @@ class LightningQALSTM(LightningModule):
                             default=128)
         parser.add_argument('--batch_size',
                             type=int,
-                            default=32)
+                            default=4)
         parser.add_argument('--lr',
                             type=float,
                             default=5e-5,
@@ -50,12 +50,10 @@ class LightningQALSTM(LightningModule):
         parser.add_argument('--algorithm',
                             type=str,
                             default='levenshtein')
-        parser.add_argument('--num_layers',
-                            type=int,
-                            default=6)
+
         parser.add_argument('--hidden_size',
                             type=int,
-                            default=768)
+                            default=512)
         parser.add_argument('--embd_size',
                             type=int,
                             default=768)
