@@ -82,7 +82,18 @@ if __name__ == "__main__":
                             log_every_n_steps=50, 
                             logger=True, 
                             max_epochs=args.max_epochs, 
-                            num_processes=1)
+                            num_processes=len(args.gpuid),
+                            accelerator='ddp',
+                            accumulate_grad_batches=1,
+                            amp_backend='native',
+                            amp_level='O2',
+                            auto_lr_find=False,
+                            auto_scale_batch_size=False,
+                            auto_select_gpus=False,
+                            automatic_optimization=None,
+                            multiple_trainloader_mode='max_size_cycle',
+                            num_sanity_val_steps=2,
+                            replace_sampler_ddp=True)
             
             trainer.fit(model)
             print('best model path {}'.format(checkpoint_callback.best_model_path))
