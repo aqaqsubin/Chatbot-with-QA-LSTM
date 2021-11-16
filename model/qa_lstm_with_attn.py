@@ -32,11 +32,7 @@ class RetrievalABLSTM(RetrievalLSTM):
 
         # Get attention weights
         # (batch_size, seq_len, hidden_size * 2)
-        mask = torch.ones_like(reply)
-        mask = torch.where(reply!=1, mask, 0)
-        mask_3d = mask.unsqueeze(dim=2).repeat_interleave(repeats=q_pool.size(-1), dim=2)
-
-        attn_weights = self.attn(q_pool, r_out, mask_3d) 
+        attn_weights = self.attn(q_pool, r_out) 
 
         # Get representation of reply 
         # (batch_size, hidden_size * 2)

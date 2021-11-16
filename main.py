@@ -35,7 +35,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--method", type=str, default="max_pooling")
     parser.add_argument("--embed", type=str, default="bert")
-    parser.add_argument("--batch_size", type=int, default=128)
+    
+    parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--hidden_size", type=int, default=128)
     parser.add_argument("--embd_size", type=int, default=256)
     

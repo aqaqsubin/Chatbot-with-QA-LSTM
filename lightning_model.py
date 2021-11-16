@@ -26,7 +26,6 @@ class LightningQALSTM(LightningModule):
 
     @staticmethod
     def add_model_specific_args(parent_parser):
-        # add model specific args
         parser = argparse.ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument('--max_len',
                             type=int,
@@ -44,13 +43,10 @@ class LightningQALSTM(LightningModule):
                             default=10)
         parser.add_argument('--margin',
                             type=float,
-                            default=2.0)
+                            default=0.2)
         parser.add_argument('--algorithm',
                             type=str,
                             default='levenshtein')
-        parser.add_argument('--dropout_rate',
-                            type=float,
-                            default=0.1)
 
         return parser
 
@@ -102,9 +98,8 @@ class LightningQALSTM(LightningModule):
             neg = negs[:, np.random.randint(self.hparams.neg_size), :]
             neg_sim = self(query, neg)
             loss = self.loss_fn(pos_sim, neg_sim, self.hparams.margin)
-            # if loss.data[0] != 0:
             losses.append(loss)
-            #     break
+
         val_loss = torch.mean(torch.stack(losses, 0))
         return val_loss
 
