@@ -23,7 +23,7 @@ def base_setting(args):
     args.max_len = getattr(args, 'max_len', 128)
     args.log = getattr(args, 'log', True)
     args.neg_size = getattr(args, 'neg_size', 10)
-    args.margin = getattr(args, 'margin', 2.0)
+    args.margin = getattr(args, 'margin', 0.2)
     args.algorithm = getattr(args, 'algorithm', 'levenshtein')
     args.cand_num = getattr(args, 'cand_num', 20)
 
@@ -80,23 +80,22 @@ def encode(sent):
     tok_ids = tokenize(sent)
     return torch.unsqueeze(torch.LongTensor(tok_ids), 0)
 
-
-def chat(model, cand_num, device):
+def chat(model, cand_num, device, use_attention=False):
     def _is_valid(query):
         if not query or query == "c":
             return False
         return True
 
     replies = get_reply_embs()
-    query = input("사용자 입력: ")
-
+    query = input("사용자 입력> ")
+    
     while _is_valid(query):
+        print(f"Query    : {query}")
         query_tok = encode(query).to(device=device)
         query_pool, _ = model.get_emb(query_tok)
 
         cos_sims = []
-
-        if isinstance(model, RetrievalLSTM):
+        if not use_attention:
             print("RetrievalLSTM")
             cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1]), replies)) 
         else:
@@ -110,9 +109,10 @@ def chat(model, cand_num, device):
 
         candidates = [r for _sim, r in cos_sims]
         print(f"Candidate: {candidates}\n")
+
         del query_tok, query_pool, _, candidates, cos_sims
 
-        query = input("사용자 입력: ")
+        query = input("사용자 입력> ")
 
     return
         
@@ -135,5 +135,5 @@ def evaluation(args):
         with torch.no_grad():    
             load_reply_embs(model=model, replies=reaction_db['reply'], device=device)
 
-    chat(model, cand_num=args.cand_num, device=device)
+    chat(model, cand_num=args.cand_num, device=device, use_attention=args.attention)
         
