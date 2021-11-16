@@ -61,12 +61,12 @@ QA-LSTM with attention
 ### **모델 훈련**
 **Multi GPU**
 ```
-python main.py --cuda --gpuid [list of gpuid] --data_dir [data dir path] --method [pooling type] --embed [embedding method] --max_epochs 10 --train --model_name [model_name] --accelerator ddp
+python main.py --cuda --gpuid [list of gpuid] --data_dir [data dir path] --method [pooling type] --embed [embedding method] --max_epochs 10 --train --model_name [model_name] --accelerator ddp --embd_size [embedding size]] --hidden_size [hidden size] --batch_size [batch_size]
 ```
 
 **Single GPU**
 ```
-python main.py --cuda --gpuid 0 --data_dir [data directory path] --method [pooling type] --embed [embedding method] --max_epochs 10 --train --model_name [model_name]
+python main.py --cuda --gpuid 0 --data_dir [data directory path] --method [pooling type] --embed [embedding method] --max_epochs 10 --train --model_name [model_name] --embd_size [embedding size]] --hidden_size [hidden size] --batch_size [batch_size]
 ```
 
 - data_dir: `train.csv`, `val.csv`가 있는 디렉토리 경로
@@ -76,12 +76,18 @@ python main.py --cuda --gpuid 0 --data_dir [data directory path] --method [pooli
 - embed: 
 	- `bert` : 사전학습된 KoBERT 임베딩 (`monologg/kobert` 사용)
 	- `nn` : torch.nn.Embedding Layer  
+<br>
+- embd_size: 임베딩 크기 (BERT 임베딩을 사용하는 경우 768)  
+- hidden_size: LSTM Layer의 hidden size  
+- batch_size: batch size
+
+<br>
 
 ### **모델 검증**
 📣 검증 시 `LightningQALSTM`의 `embd_size`, `hiddend_size` 확인 필요  (훈련과 동일하게 설정)  
 
 ```
-python main.py --cuda --model_pt [model path] --gpuid [gpu id] --data_dir [data directory path]
+python main.py --cuda --model_pt [model path] --gpuid [gpu id] --data_dir [data directory path] --embd_size [embedding size]  --hidden_size [hidden size]
 ```
 
 - data_dir: `reaction_emb.pickle`이 있는 디렉토리 경로 (없는 경우 새로 생성)
@@ -92,6 +98,10 @@ python main.py --cuda --model_pt [model path] --gpuid [gpu id] --data_dir [data 
 - embed: 
 	- `bert` : 사전학습된 KoBERT 임베딩 (`monologg/kobert` 사용)
 	- `nn` : torch.nn.Embedding Layer  
+<br>
+- embd_size: 임베딩 크기 (BERT 임베딩을 사용하는 경우 768)   
+- hidden_size: LSTM Layer의 hidden size  
+<br>
 
 #### **모델 검증 예시**
 
