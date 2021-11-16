@@ -5,9 +5,10 @@ import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from pytorch_lightning.core.lightning import LightningModule
-from transformers.optimization import AdamW, get_cosine_schedule_with_warmup
+from transformers.optimization import AdamW
 
 from dataloader import ChatData
 from model.qa_lstm_with_attn import RetrievalABLSTM
@@ -30,9 +31,6 @@ class LightningQALSTM(LightningModule):
         parser.add_argument('--max_len',
                             type=int,
                             default=128)
-        parser.add_argument('--batch_size',
-                            type=int,
-                            default=4)
         parser.add_argument('--lr',
                             type=float,
                             default=5e-5,
@@ -46,17 +44,10 @@ class LightningQALSTM(LightningModule):
                             default=10)
         parser.add_argument('--margin',
                             type=float,
-                            default=0.2)
-
+                            default=2.0)
         parser.add_argument('--algorithm',
                             type=str,
                             default='levenshtein')
-        parser.add_argument('--hidden_size',
-                            type=int,
-                            default=256)
-        parser.add_argument('--embd_size',
-                            type=int,
-                            default=768)
         parser.add_argument('--dropout_rate',
                             type=float,
                             default=0.1)
@@ -95,9 +86,8 @@ class LightningQALSTM(LightningModule):
             neg = negs[:, np.random.randint(self.hparams.neg_size), :]
             neg_sim = self(query, neg)
             loss = self.loss_fn(pos_sim, neg_sim, self.hparams.margin)
-            # if loss.data[0] != 0:
             losses.append(loss)
-            #     break
+
         train_loss = torch.mean(torch.stack(losses, 0))
         self.log('train_loss', train_loss, prog_bar=True)
         return train_loss
@@ -134,13 +124,14 @@ class LightningQALSTM(LightningModule):
         ]
         optimizer = AdamW(optimizer_grouped_parameters,
                           lr=self.hparams.lr, correct_bias=False)
-        # warm up lr
-        num_train_steps = len(self.train_dataloader()) * self.hparams.max_epochs
-        num_warmup_steps = int(num_train_steps * self.hparams.warmup_ratio)
-        scheduler = get_cosine_schedule_with_warmup(
+
+        # Cosine Annealing Learning Rate
+        scheduler = CosineAnnealingLR(
             optimizer,
-            num_warmup_steps=num_warmup_steps, num_training_steps=num_train_steps)
-        lr_scheduler = {'scheduler': scheduler, 'name': 'cosine_schedule_with_warmup',
+            T_max=50,
+            eta_min=0
+        )
+        lr_scheduler = {'scheduler': scheduler, 'name': 'cosine_annealing_learning_rate',
                         'monitor': 'loss', 'interval': 'step',
                         'frequency': 1}
         return [optimizer], [lr_scheduler]

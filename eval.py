@@ -21,10 +21,7 @@ TOKENIZER = get_tokenizer()
 
 def base_setting(args):
     args.max_len = getattr(args, 'max_len', 128)
-    args.batch_size = getattr(args, 'batch_size', 4)
     args.log = getattr(args, 'log', True)
-    args.embd_size = getattr(args, 'embd_size', 256)
-    args.hidden_size = getattr(args, 'hidden_size', 128)
     args.neg_size = getattr(args, 'neg_size', 10)
     args.margin = getattr(args, 'margin', 2.0)
     args.algorithm = getattr(args, 'algorithm', 'levenshtein')
