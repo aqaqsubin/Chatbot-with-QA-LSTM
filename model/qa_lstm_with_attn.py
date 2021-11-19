@@ -11,7 +11,6 @@ class RetrievalABLSTM(RetrievalLSTM):
         super(RetrievalABLSTM, self).__init__(args, vocab_size, method)
         self.attn = BadanauAttn(args.hidden_size)
 
-
     def forward(self, query, reply):
         # embedding
         # (batch_size, seq_len, embd_size)
@@ -31,15 +30,15 @@ class RetrievalABLSTM(RetrievalLSTM):
         r_out, _r_hidden_stat = self.shared_lstm(reply_emb)
 
         # Get attention weights
-        # (batch_size, seq_len, hidden_size * 2)
+        # (batch_size, seq_len, 1)
         attn_weights = self.attn(q_pool, r_out) 
 
         # Get representation of reply 
-        # (batch_size, hidden_size * 2)
+        # (batch_size, 1)
         r_pool = self.get_pools(attn_weights)
 
         # (batch_size,)
-        cos_sim = self.cos(q_pool, r_pool)
+        cos_sim = self.cos(self.dropout(q_pool), self.dropout(r_pool))
         return cos_sim, q_pool, r_pool
 
     def get_attn(self, q_pool, r_out):
@@ -48,4 +47,3 @@ class RetrievalABLSTM(RetrievalLSTM):
         r_pool = self.get_pools(attn_weights)
 
         return r_pool
-        
