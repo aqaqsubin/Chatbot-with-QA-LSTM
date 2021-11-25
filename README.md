@@ -43,7 +43,7 @@ QA-LSTM
 
 <br>
 <div  align=left>
-<img  src="./img/QA-LSTM_attn.png"  width=700/><br>
+<img  src="./img/QA-LSTM_with_attn.png"  width=700/><br>
 QA-LSTM with attention
 </div>
 <br>
