@@ -13,6 +13,7 @@ from math import ceil as ceil
 from os.path import join as pjoin
 
 from data_utils import read_df
+from dataloader import ChatTestData
 from lightning_model import LightningQALSTM
 from model.qa_lstm import RetrievalLSTM
 from kobert_transformers import get_tokenizer
@@ -86,6 +87,7 @@ def chat(model, cand_num, device, use_attention=False):
             return False
         return True
 
+    dataset = ChatTestData(data_path=REACTION_PATH, batch_size=1000)
     replies = get_reply_embs()
     query = input("사용자 입력> ")
     
@@ -94,27 +96,35 @@ def chat(model, cand_num, device, use_attention=False):
         query_tok = encode(query).to(device=device)
         query_pool, _ = model.get_emb(query_tok)
 
+        entire_cos_sim = []
         cos_sims = []
-        if not use_attention:
-            print("RetrievalLSTM")
-            cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1]), replies)) 
-        else:
-            print("RetrievalABLSTM")
-            attn_weights = list(map(lambda x: model.get_attn(query_pool, x[1]), replies))
-            cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1][-1]), zip(attn_weights, replies)))    
-            del attn_weights
 
-        cos_sims = sorted(cos_sims, key=lambda x: x[0], reverse=True)
-        cos_sims = cos_sims[:cand_num]
+        for replies in dataset:
+            if not use_attention:
+                print("RetrievalLSTM")
+                cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1]), replies)) 
+            else:
+                print("RetrievalABLSTM")
+                attn_weights = list(map(lambda x: model.get_attn(query_pool, x[1]), replies))
+                cos_sims = list(map(lambda x: (model.get_similarity(query_pool, x[0].to(device=device)), x[-1][-1]), zip(attn_weights, replies)))    
+                del attn_weights
 
-        candidates = [r for _sim, r in cos_sims]
+            cos_sims = sorted(cos_sims, key=lambda x: x[0], reverse=True)
+            cos_sims = cos_sims[:cand_num]
+
+            entire_cos_sim += cos_sims
+            entire_cos_sim = sorted(entire_cos_sim, key=lambda x: x[0], reverse=True)
+            entire_cos_sim = entire_cos_sim[:cand_num]
+
+        candidates = [r for _sim, r in entire_cos_sim]
         print(f"Candidate: {candidates}\n")
 
-        del query_tok, query_pool, _, candidates, cos_sims
+        del query_tok, query_pool, _, candidates, entire_cos_sim
 
         query = input("사용자 입력> ")
 
     return
+        
         
 def evaluation(args):
     base_setting(args)

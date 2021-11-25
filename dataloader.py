@@ -3,6 +3,8 @@ from torch.utils.data import DataLoader, Dataset
 from data_utils import read_df
 from typing import List
 
+import os
+import pickle
 import numpy as np
 import textdistance
 import warnings
@@ -74,3 +76,27 @@ class ChatData(Dataset):
         neg_ids = list(map(lambda x: self._tokenize(x), negs))
         
         return(query_ids, reply_ids, neg_ids)
+
+
+
+class ChatTestData:
+    def __init__(self, data_path, batch_size=1000):
+        assert os.path.isfile(data_path)
+        self.data_path = data_path
+        self.batch_size = batch_size
+
+    def __iter__(self):
+        reply_embs = []
+        with open(self.data_path, 'rb') as f_react:
+            while True:
+                try:
+                    pool, lstm_out, reply = pickle.load(f_react)
+                except EOFError:
+                    break
+                reply_embs.append((pool, lstm_out, reply))
+                
+                if len(reply_embs) == self.batch_size:
+                    yield reply_embs
+                    reply_embs = []
+
+        return reply_embs
